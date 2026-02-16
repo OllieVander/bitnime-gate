@@ -23,13 +23,17 @@
   </div>
 
   <script>
-    // RAW collection address returned by TON API
+    // This is the EXACT collection format your TON API returned in your screenshot:
     const COLLECTION_RAW = "0:b509366380a4a4806fffea815b8befeb445b8c535bc67b0529698a5f5782b43a";
 
     const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
       manifestUrl: "https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json",
       buttonRootId: "ton-connect"
     });
+
+    function normalize(addr) {
+      return String(addr || "").trim().toLowerCase();
+    }
 
     tonConnectUI.onStatusChange(async (wallet) => {
       if (!wallet) return;
@@ -44,9 +48,10 @@
         const nftItems = data?.nft_items || [];
         const collectionsFound = nftItems
           .map(nft => nft?.collection?.address)
-          .filter(Boolean);
+          .filter(Boolean)
+          .map(normalize);
 
-        const ownsNFT = collectionsFound.includes(COLLECTION_RAW);
+        const ownsNFT = collectionsFound.includes(normalize(COLLECTION_RAW));
 
         if (ownsNFT) {
           document.getElementById("status").innerText = "";
