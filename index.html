@@ -5,14 +5,14 @@
   <script src="https://unpkg.com/@tonconnect/ui@latest/dist/tonconnect-ui.min.js"></script>
 </head>
 
-<body style="background:black;color:white;text-align:center;padding-top:100px;font-family:sans-serif;">
+<body style="background:black;color:white;text-align:center;padding-top:120px;font-family:sans-serif;">
 
   <h1>Ledger Syndicate Vault</h1>
 
   <div id="ton-connect"></div>
   <br><br>
 
-  <div id="status" style="white-space:pre-wrap;">Connect your wallet to continue.</div>
+  <div id="status">Connect your wallet to continue.</div>
 
   <div id="secret" style="display:none;margin-top:40px;">
     <h2>Access Granted</h2>
@@ -23,8 +23,8 @@
   </div>
 
   <script>
-    // The collection from your GetGems URL
-    const COLLECTION_FRIENDLY = "EQC1CTZjgKSkgG__6oFbi-_rRFuMU1vGewUpaYpfV4K0OtMj";
+    // RAW collection address returned by TON API
+    const COLLECTION_RAW = "0:b509366380a4a4806fffea815b8befeb445b8c535bc67b0529698a5f5782b43a";
 
     const tonConnectUI = new TON_CONNECT_UI.TonConnectUI({
       manifestUrl: "https://ton-connect.github.io/demo-dapp-with-react-ui/tonconnect-manifest.json",
@@ -35,7 +35,7 @@
       if (!wallet) return;
 
       const address = wallet.account.address;
-      document.getElementById("status").innerText = "Connected wallet:\n" + address + "\n\nChecking NFTs...";
+      document.getElementById("status").innerText = "Checking ownership...";
 
       try {
         const response = await fetch(`https://tonapi.io/v2/accounts/${address}/nfts`);
@@ -46,26 +46,19 @@
           .map(nft => nft?.collection?.address)
           .filter(Boolean);
 
-        // DEBUG OUTPUT (this is what we need to see)
-        document.getElementById("status").innerText =
-          "Connected wallet:\n" + address +
-          "\n\nNFTs found: " + nftItems.length +
-          "\n\nCollections returned by TON API (first 10):\n" +
-          (collectionsFound.slice(0, 10).join("\n") || "(none)");
-
-        // Ownership check: match using the exact string TON API returns
-        const ownsNFT = collectionsFound.includes(COLLECTION_FRIENDLY);
+        const ownsNFT = collectionsFound.includes(COLLECTION_RAW);
 
         if (ownsNFT) {
+          document.getElementById("status").innerText = "";
           document.getElementById("secret").style.display = "block";
         } else {
-          document.getElementById("status").innerText +=
-            "\n\nResult: NOT a holder (based on collection match).";
+          document.getElementById("status").innerText =
+            "You do not own a Ledger Syndicate NFT.";
         }
 
       } catch (err) {
         document.getElementById("status").innerText =
-          "Error checking ownership.\n\n" + err;
+          "Error checking ownership.";
       }
     });
   </script>
